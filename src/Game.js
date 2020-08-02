@@ -118,7 +118,7 @@ export class Game {
         this.board[sRow][sCol] = new Piece(PIECE.EMPTY);
 
         const swap = this.swap;
-        this.current.cards = [swap, this.current.cards.filter(c => c !== card)];
+        this.current.cards = [swap, ...this.current.cards.filter(c => c !== card)];
         this.swap = card;
 
         const piece = normalize(start.type);
@@ -161,7 +161,7 @@ export class Game {
 
         const swap = this.swap;
         this.swap = toPass;
-        this.current.cards = [swap, this.current.cards.filter(c => c !== toPass)];
+        this.current.cards = [swap, ...this.current.cards.filter(c => c !== toPass)];
 
         return [null, `Pass with ${toPass}`];
     }
