@@ -1,62 +1,59 @@
-const Board = require('./Board.js');
 const Game = require('./Game.js');
-const { TURN } = require('./Enums.js');
+const { TURN, EMIT } = require('./Enums.js');
 
-const platform = (lineReader, linePrinter) => {
-    const game = new Game(new Board(), linePrinter);
+const platform = (reader, emitter) => {
+    const game = new Game(emitter);
     do {
-        console.log(`${'='.repeat(42)}\n`);
+        emitter(EMIT.DIV);
         game.togglePlayer();
         game.turn();
         let incomplete = true;
         while (incomplete) {
-            const [input, ...rest] = lineReader().split(/\W/g);
+            const [input, ...rest] = reader().split(/\W/g);
             switch (input) {
                 case TURN.GAME: {
                     if (rest.length !== 0)
-                        console.error(`Invalid number of Arguments`);
-                    else
-                        game.turn();
+                        emitter(EMIT.ERROR, `Invalid number of Arguments`);
+                    else game.turn();
                     break;
                 }
                 case TURN.CARD: {
                     if (rest.length !== 1)
-                        console.error(`Invalid number of Arguments`);
-                    else
-                        console.log(game.pattern(rest.pop()));
+                        emitter(EMIT.ERROR, `Invalid number of Arguments`);
+                    else game.pattern(rest.pop());
                     break;
                 }
                 case TURN.MOVE: {
-                    if (rest.length !== 3)
-                        console.error(`Invalid number of Arguments`);
+                    if (rest.length !== 3) {
+                        emitter(EMIT.ERROR, `Invalid number of Arguments`);
+                        break;
+                    }
+                    const [err, message] = game.move(...rest);
+                    if (err)
+                        emitter(EMIT.ERROR, err);
                     else {
-                        const [err, message] = game.move(...rest);
-                        if (err)
-                            console.error(err);
-                        else {
-                            incomplete = !incomplete;
-                            console.log(message);
-                        }
+                        incomplete = !incomplete;
+                        emitter(EMIT.SUCCESS, message);
                     }
                     break;
                 }
                 case TURN.PASS: {
-                    if (rest.length !== 1)
-                        console.error(`Invalid number of Arguments`);
+                    if (rest.length !== 1) {
+                        emitter(EMIT.ERROR, `Invalid number of Arguments`);
+                        break;
+                    }
+                    const [err, message] = game.pass(rest.pop());
+                    if (err)
+                        emitter(EMIT.ERROR, err);
                     else {
-                        const [err, message] = game.pass(rest.pop());
-                        if (err)
-                            console.error(err);
-                        else {
-                            incomplete = !incomplete;
-                            console.log(message);
-                        }
+                        incomplete = !incomplete;
+                        emitter(EMIT.SUCCESS, message);
                     }
                     break;
                 }
                 case TURN.QUIT: {
                     if (rest.length !== 0)
-                        console.error(`Invalid number of Arguments`);
+                        emitter(EMIT.ERROR, `Invalid number of Arguments`);
                     else {
                         game.surrender();
                         incomplete = !incomplete;
@@ -64,21 +61,20 @@ const platform = (lineReader, linePrinter) => {
                     break;
                 }
                 default: {
-                    console.log('Help:');
-                    console.log('- game');
-                    console.log('- card <card>');
-                    console.log('- pass <card>');
-                    console.log('- move <start> <end> <card>');
-                    console.log('- quit');
+                    emitter(EMIT.HELP, 'Help:');
+                    emitter(EMIT.HELP, '- game');
+                    emitter(EMIT.HELP, '- card <card>');
+                    emitter(EMIT.HELP, '- pass <card>');
+                    emitter(EMIT.HELP, '- move <start> <end> <card>');
+                    emitter(EMIT.HELP, '- quit');
                     break;
                 }
             }
-            console.log();
+            emitter(EMIT.BETWEEN);
         }
     } while (game.isNotDone());
-    console.log(`${'='.repeat(42)}\n`);
+    emitter(EMIT.DIV);
     game.final();
-    console.log(game.status);
 };
 
-module.exports = platform
+module.exports = platform;

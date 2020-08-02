@@ -1,17 +1,18 @@
 const PIECE = {
-    MASTER: 'Master',
-    STUDENT: 'Student',
-    EMPTY: ' '
+    MASTER: 'MASTER',
+    STUDENT: 'STUDENT',
+    EMPTY: 'EMPTY',
+    TARGET: 'TARGET',
+    CENTER: 'CENTER'
 };
 
 const COLOR = {
-    RISE: 'Rising',
-    FALL: 'Falling',
-    NULL: ' '
+    RISE: 'RISING',
+    FALL: 'FALLING',
 };
 
 const STATUS = {
-    CURRENT: 'current',
+    CURRENT: 'Game in Progress...',
     RISEWIN: 'The Rising Player Wins!',
     FALLWIN: 'The Falling Player Wins!',
     RISESURRENDER: 'The Rising Player Surrenders!',
@@ -46,10 +47,31 @@ const TURN = {
     QUIT: 'quit'
 };
 
+const SIDE_LENGTH = 5;
+
+const CARDS_PER_PLAYER = 2;
+
+const EMIT = {
+    GRID: 'Grid',
+    ERROR: 'Error',
+    SUCCESS: 'Success',
+    BETWEEN: 'Between',
+    DIV: 'Div',
+    HELP: 'Help',
+    TURN: 'Turn',
+    STATUS: 'Status',
+    SWAP: 'Swap',
+    PLAYER: 'Player',
+    PATTERN: 'Pattern'
+};
+
 module.exports = {
     PIECE,
     COLOR,
     STATUS,
     CARDS,
-    TURN
+    TURN,
+    SIDE_LENGTH,
+    CARDS_PER_PLAYER,
+    EMIT
 };

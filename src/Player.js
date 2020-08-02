@@ -5,10 +5,6 @@ class Player {
         this.cards = cards;
     }
 
-    toString() {
-        return `${this.color} Player's Cards: ${this.cards.join(', ')}`;
-    }
-
 }
 
 module.exports = Player;

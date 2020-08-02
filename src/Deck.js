@@ -3,6 +3,7 @@ const { CARDS } = require('./Enums.js');
 class Deck {
 
     deal(number) {
+
         // Fisher–Yates shuffle
         const shuffled = [...CARDS.keys()];
         for (let i = shuffled.length - 1; i > 0; i--) {
@@ -11,6 +12,7 @@ class Deck {
             shuffled[i] = shuffled[j];
             shuffled[j] = temp;
         }
+
         return shuffled.slice(0, number);
     }
 

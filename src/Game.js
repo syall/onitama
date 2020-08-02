@@ -1,195 +1,201 @@
 const Deck = require('./Deck.js');
 const Player = require('./Player.js');
 const Piece = require('./Piece.js');
-const { createGrid, stringGrid, SIDE_LENGTH } = require('./Board.js');
-const { PIECE, COLOR, STATUS, CARDS } = require('./Enums.js');
+const { createBoard, createPattern } = require('./Board.js');
+const {
+    PIECE, COLOR, STATUS, CARDS, SIDE_LENGTH, CARDS_PER_PLAYER, EMIT
+} = require('./Enums.js');
 
 class Game {
 
-    CARD_PER_PLAYER = 2;
+    CARD_PER_PLAYER = CARDS_PER_PLAYER;
     TOTAL_CARDS = 2 * this.CARD_PER_PLAYER + 1;
 
-    constructor(board, emit = console.log) {
-        this.board = board;
-        this.emit = emit;
+    constructor(emitter) {
+
+        // Arguments
+        this.board = createBoard();
+        this.emitter = emitter;
+
+        // Cards
+        if (this.TOTAL_CARDS > CARDS.size) {
+            throw new Error(`Total number of Cards exceeds Deck Size`);
+        }
         const cards = new Deck().deal(this.TOTAL_CARDS);
         this[COLOR.RISE] = new Player(COLOR.RISE, cards.slice(0, this.CARD_PER_PLAYER));
         this.swap = cards[this.CARD_PER_PLAYER];
         this[COLOR.FALL] = new Player(COLOR.FALL, cards.slice(this.CARD_PER_PLAYER + 1));
+
+        // Players
         this.current = this[COLOR.RISE];
         this.opposite = this[COLOR.FALL];
         this.togglePlayer();
+
+        // Status
         this.status = STATUS.CURRENT;
+
     }
 
     turn() {
-        this.emit(`${this.current.color} Player's Turn`);
-        this.emit(`Swap Card: ${this.swap}`);
-        this.emit(this[COLOR.FALL].toString());
-        this.emit(this.board.toString());
-        this.emit(this[COLOR.RISE].toString());
+        this.emitter(EMIT.TURN, this.current);
+        this.info();
     }
 
     final() {
-        this.emit(`Swap Card: ${this.swap}`);
-        this.emit(this[COLOR.FALL].toString());
-        this.emit(this.board.toString());
-        this.emit(this[COLOR.RISE].toString());
+        this.info();
+        this.emitter(EMIT.STATUS, `${this.status}`);
+    }
+
+    info() {
+        this.emitter(EMIT.SWAP, `${this.swap}`);
+        this.emitter(EMIT.PLAYER, this[COLOR.FALL]);
+        this.emitter(EMIT.GRID, this.board);
+        this.emitter(EMIT.PLAYER, this[COLOR.RISE]);
     }
 
     pattern(name) {
 
         const pattern = CARDS.get(name);
-        if (!pattern)
-            return `Invalid Card: ${name}`;
-
-        const length = 5;
-        const grid = createGrid(length);
-        const offset = Math.floor(length / 2);
-        grid[offset][offset] = '()';
-        const dir = this.current === this[COLOR.RISE] ? 1 : -1;
-        for (const [x, y] of pattern) {
-            const newX = offset - (dir * y);
-            const newY = offset + (dir * x);
-            grid[newX][newY] = '<>';
+        if (!pattern) {
+            this.emitter(EMIT.PATTERN, `Invalid Card: ${name}`);
+        } else {
+            const dir = this.current === this[COLOR.RISE] ? 1 : -1;
+            this.emitter(EMIT.GRID, createPattern(pattern, dir));
         }
 
-        return stringGrid(grid);
     }
 
     move(rawStart, rawEnd, card) {
 
-        if (!CARDS.has(card) || !this.current.cards.includes(card))
+        if (!CARDS.has(card)) {
             return [`Invalid Card: ${card}`, null];
+        } else if (!this.current.cards.includes(card)) {
+            return [`Card not available: ${card}`, null];
+        }
 
-        const [rsRow, rsCol] = rawStart
-            .toUpperCase()
-            .match(/^([a-zA-Z])(\d)$/).slice(1, 3);
-        const [reRow, reCol] = rawEnd
-            .toUpperCase()
-            .match(/^([a-zA-Z])(\d)$/).slice(1, 3);
+        function normalize(raw) {
+            const [rawRow, rawCol] = raw
+                .toUpperCase()
+                .match(/^([a-zA-Z])(\d)$/)
+                .slice(1, 3);
+            const row = rawRow.charCodeAt(0) - 'A'.charCodeAt(0);
+            const col = rawCol - 1;
+            return [row, col];
+        }
 
-        const sRow = rsRow.charCodeAt(0) - 65;
-        const sCol = rsCol - 1;
+        const [sRow, sCol] = normalize(rawStart);
         if (sRow < 0 || sRow >= SIDE_LENGTH ||
             sCol < 0 || sCol >= SIDE_LENGTH)
-            return [`Invalid Start: ${rawStart}`, null];
+            return [`Invalid Start Position: ${rawStart}`, null];
 
-        const start = this.board.grid[sRow][sCol];
+        const start = this.board[sRow][sCol];
         if (start.color !== this.current.color)
-            return [`Invalid Start: ${rawStart}`, null];
+            return [`Piece not available: ${rawStart}`, null];
 
-        const eRow = reRow.charCodeAt(0) - 65;
-        const eCol = reCol - 1;
+        const [eRow, eCol] = normalize(rawEnd);
         if (eRow < 0 || eRow >= SIDE_LENGTH ||
             eCol < 0 || eCol >= SIDE_LENGTH)
-            return [`Invalid End: ${rawEnd}`, null];
+            return [`Invalid End Position: ${rawEnd}`, null];
 
-        const end = this.board.grid[eRow][eCol];
+        const end = this.board[eRow][eCol];
         if (end.color === this.current.color)
-            return [`Invalid End: ${rawEnd}`, null];
+            return [`Invalid Piece in End Position: ${rawEnd}`, null];
 
         const dir = this.current === this[COLOR.RISE] ? 1 : -1;
         let possible = false;
         for (const [x, y] of CARDS.get(card)) {
-            const newX = sRow - (dir * y);
-            const newY = sCol + (dir * x);
-            if (newX === eRow && newY === eCol) {
+            if (sRow - dir * y === eRow && sCol + dir * x === eCol) {
                 possible = true;
                 break;
             }
         }
-        if (!possible)
-            return [`Invalid Move: ${rawStart} to ${rawEnd}`, null];
+        if (!possible) {
+            return [`Invalid Move in Card: ${rawStart} to ${rawEnd}`, null];
+        }
 
-        this.board.grid[eRow][eCol] = start;
-        this.board.grid[sRow][sCol] = new Piece(PIECE.EMPTY, COLOR.NULL);
+        this.board[eRow][eCol] = start;
+        this.board[sRow][sCol] = new Piece(PIECE.EMPTY);
 
         const swap = this.swap;
-        this.current.cards = this.current.cards.filter(c => c !== card);
+        this.current.cards = [swap, this.current.cards.filter(c => c !== card)];
         this.swap = card;
-        this.current.cards.push(swap);
 
-        const type = start.type;
-        const move = `from ${rsRow}${rsCol} to ${reRow}${reCol}`;
-        return [null, `${type} moved ${move} with ${card}`];
+        const piece = `${start.type.slice(0, 1).toUpperCase()}${start.type.slice(1).toLowerCase()}`;
+        const move = `from ${sRow}${sCol} to ${eRow}${eCol}`;
+        return [null, `${piece} moved ${move} with ${card}`];
     }
 
-    pass(cardToPass) {
+    pass(toPass) {
 
-        if (!CARDS.has(cardToPass) || !this.current.cards.includes(cardToPass))
-            return [`Invalid Card: ${cardToPass}`, null];
+        if (!CARDS.has(toPass)) {
+            return [`Invalid Card: ${toPass}`, null];
+        } else if (!this.current.cards.includes(toPass)) {
+            return [`Card not Available: ${toPass}`, null];
+        }
 
+        const dir = this.current === this[COLOR.RISE] ? 1 : -1;
+        // For every current player's piece
         for (let row = 0; row < SIDE_LENGTH; row++) {
             for (let col = 0; col < SIDE_LENGTH; col++) {
-                const { color } = this.board.grid[row][col];
-                if (this.current.color !== color)
+                const { color } = this.board[row][col];
+                if (this.current.color !== color) {
                     continue;
-                const dir = this.current === this[COLOR.RISE] ? 1 : -1;
+                }
+                // For every move on a piece
                 for (const card of this.current.cards) {
                     for (const [x, y] of CARDS.get(card)) {
-                        const newX = row - (dir * y);
-                        const newY = col + (dir * x);
-                        if (newX < 0 || newX >= SIDE_LENGTH ||
-                            newY < 0 || newY >= SIDE_LENGTH)
+                        const eX = row - dir * y, eY = col + dir * x;
+                        if (eX < 0 || eX >= SIDE_LENGTH ||
+                            eY < 0 || eY >= SIDE_LENGTH) {
                             continue;
-                        const end = this.board.grid[newX][newY];
-                        if (end.color !== this.current.color)
-                            return [`Invalid Pass`, null];
+                        }
+                        const end = this.board[eX][eY];
+                        if (end.color !== this.current.color) {
+                            return [`Moves Available: Invalid Pass`, null];
+                        }
                     }
                 }
             }
         }
 
         const swap = this.swap;
-        this.current.cards = this.current.cards.filter(c => c !== cardToPass);
-        this.swap = cardToPass;
-        this.current.cards.push(swap);
+        this.swap = toPass;
+        this.current.cards = [swap, this.current.cards.filter(c => c !== toPass)];
 
-        return [null, `Pass with ${cardToPass}`];
-
+        return [null, `Pass with ${toPass}`];
     }
 
     isNotDone() {
 
         // Way of the Stone
-        let stone = !this.board.grid.some(r => r.some(({ type, color }) =>
-            type === PIECE.MASTER && color === this.opposite.color));
-        if (stone) {
-            this.status = this.current === this[COLOR.RISE]
-                ? STATUS.RISEWIN
-                : STATUS.FALLWIN;
-            return false;
-        }
+        const stone = !this.board.some(r =>
+            r.some(({ type, color }) =>
+                type === PIECE.MASTER && color === this.opposite.color));
 
         // Way of the Stream
         const templeRow = this.current.color === COLOR.RISE ? 0 : SIDE_LENGTH - 1;
         const templeCol = Math.floor(SIDE_LENGTH / 2);
-        const { type, color } = this.board.grid[templeRow][templeCol];
+        const { type, color } = this.board[templeRow][templeCol];
         const stream = type === PIECE.MASTER && color === this.current.color;
-        if (stream) {
+
+        if (stone || stream) {
             this.status = this.current === this[COLOR.RISE]
                 ? STATUS.RISEWIN
                 : STATUS.FALLWIN;
             return false;
-        }
-
-        return this.status === STATUS.CURRENT;
+        } else return this.status === STATUS.CURRENT;
     }
 
     togglePlayer() {
         const current = this.current;
-        const opposite = this.current === this[COLOR.RISE]
-            ? this[COLOR.FALL]
-            : this[COLOR.RISE];
-        this.current = opposite;
+        this.current = this.opposite;
         this.opposite = current;
     }
 
     surrender() {
-        this.status = this.current === this[COLOR.RISE]
-            ? STATUS.RISESURRENDER
-            : STATUS.FALLSURRENDER;
+        this.status = this.current === this[COLOR.RISE] ?
+            STATUS.RISESURRENDER :
+            STATUS.FALLSURRENDER;
     }
 
 }
