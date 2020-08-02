@@ -2,6 +2,7 @@
   "scripts": {
     "start": "node node-index.js"
   },
+  "type": "module",
   "dependencies": {
     "readline-sync": "^1.4.10"
   }

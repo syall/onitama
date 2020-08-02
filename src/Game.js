@@ -1,12 +1,13 @@
-const Deck = require('./Deck.js');
-const Player = require('./Player.js');
-const Piece = require('./Piece.js');
-const { createBoard, createPattern } = require('./Board.js');
-const {
+import { Deck } from './Deck.js';
+import { Player } from './Player.js';
+import { Piece } from './Piece.js';
+import { Board } from './Board.js';
+import {
     PIECE, COLOR, STATUS, CARDS, SIDE_LENGTH, CARDS_PER_PLAYER, EMIT
-} = require('./Enums.js');
+} from './Enums.js';
+import { normalize } from './utils.js';
 
-class Game {
+export class Game {
 
     CARD_PER_PLAYER = CARDS_PER_PLAYER;
     TOTAL_CARDS = 2 * this.CARD_PER_PLAYER + 1;
@@ -14,7 +15,7 @@ class Game {
     constructor(emitter) {
 
         // Arguments
-        this.board = createBoard();
+        this.board = Board.createBoard();
         this.emitter = emitter;
 
         // Cards
@@ -60,7 +61,7 @@ class Game {
             this.emitter(EMIT.PATTERN, `Invalid Card: ${name}`);
         } else {
             const dir = this.current === this[COLOR.RISE] ? 1 : -1;
-            this.emitter(EMIT.GRID, createPattern(pattern, dir));
+            this.emitter(EMIT.GRID, Board.createPattern(pattern, dir));
         }
 
     }
@@ -73,7 +74,7 @@ class Game {
             return [`Card not available: ${card}`, null];
         }
 
-        function normalize(raw) {
+        const convert = raw => {
             const [rawRow, rawCol] = raw
                 .toUpperCase()
                 .match(/^([a-zA-Z])(\d)$/)
@@ -81,9 +82,9 @@ class Game {
             const row = rawRow.charCodeAt(0) - 'A'.charCodeAt(0);
             const col = rawCol - 1;
             return [row, col];
-        }
+        };
 
-        const [sRow, sCol] = normalize(rawStart);
+        const [sRow, sCol] = convert(rawStart);
         if (sRow < 0 || sRow >= SIDE_LENGTH ||
             sCol < 0 || sCol >= SIDE_LENGTH)
             return [`Invalid Start Position: ${rawStart}`, null];
@@ -92,7 +93,7 @@ class Game {
         if (start.color !== this.current.color)
             return [`Piece not available: ${rawStart}`, null];
 
-        const [eRow, eCol] = normalize(rawEnd);
+        const [eRow, eCol] = convert(rawEnd);
         if (eRow < 0 || eRow >= SIDE_LENGTH ||
             eCol < 0 || eCol >= SIDE_LENGTH)
             return [`Invalid End Position: ${rawEnd}`, null];
@@ -120,7 +121,7 @@ class Game {
         this.current.cards = [swap, this.current.cards.filter(c => c !== card)];
         this.swap = card;
 
-        const piece = `${start.type.slice(0, 1).toUpperCase()}${start.type.slice(1).toLowerCase()}`;
+        const piece = normalize(start.type);
         const move = `from ${sRow}${sCol} to ${eRow}${eCol}`;
         return [null, `${piece} moved ${move} with ${card}`];
     }
@@ -199,5 +200,3 @@ class Game {
     }
 
 }
-
-module.exports = Game;

@@ -1,6 +1,7 @@
-const rl = require('readline-sync');
-const platform = require('./src/platform.js');
-const { PIECE, EMIT } = require('./src/Enums.js');
+import rl from 'readline-sync';
+import { platform } from './src/platform.js';
+import { PIECE, EMIT } from './src/Enums.js';
+import { normalize } from './src/utils.js';
 
 platform(reader, emitter);
 
@@ -9,12 +10,6 @@ function reader() {
 }
 
 function emitter(emit, ...args) {
-
-    function normalize(s) {
-        const first = s.slice(0, 1).toUpperCase();
-        const rest = s.slice(1).toLowerCase();
-        return `${first}${rest}`;
-    }
 
     switch (emit) {
         case EMIT.GRID: {

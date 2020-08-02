@@ -1,6 +1,6 @@
-const { CARDS } = require('./Enums.js');
+import { CARDS } from './Enums.js';
 
-class Deck {
+export class Deck {
 
     deal(number) {
 
@@ -17,5 +17,3 @@ class Deck {
     }
 
 }
-
-module.exports = Deck;

@@ -1,7 +1,7 @@
-const Piece = require('./Piece.js');
-const { PIECE, COLOR, SIDE_LENGTH } = require('./Enums.js');
+import { Piece } from './Piece.js';
+import { PIECE, COLOR, SIDE_LENGTH } from './Enums.js';
 
-class Board {
+export class Board {
 
     static createGrid(length) {
 
@@ -52,5 +52,3 @@ class Board {
     }
 
 }
-
-module.exports = Board;

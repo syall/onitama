@@ -1,4 +1,4 @@
-class Player {
+export class Player {
 
     constructor(color, cards) {
         this.color = color;
@@ -6,5 +6,3 @@ class Player {
     }
 
 }
-
-module.exports = Player;

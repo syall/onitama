@@ -65,7 +65,7 @@ const EMIT = {
     PATTERN: 'Pattern'
 };
 
-module.exports = {
+export {
     PIECE,
     COLOR,
     STATUS,

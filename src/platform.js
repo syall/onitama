@@ -1,7 +1,7 @@
-const Game = require('./Game.js');
-const { TURN, EMIT } = require('./Enums.js');
+import { Game } from './Game.js';
+import { TURN, EMIT } from './Enums.js';
 
-const platform = (reader, emitter) => {
+export const platform = (reader, emitter) => {
     const game = new Game(emitter);
     do {
         emitter(EMIT.DIV);
@@ -76,5 +76,3 @@ const platform = (reader, emitter) => {
     emitter(EMIT.DIV);
     game.final();
 };
-
-module.exports = platform;

@@ -1,4 +1,4 @@
-class Piece {
+export class Piece {
 
     constructor(type, color) {
         this.type = type;
@@ -6,5 +6,3 @@ class Piece {
     }
 
 }
-
-module.exports = Piece;
