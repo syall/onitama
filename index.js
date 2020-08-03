@@ -1,6 +1,6 @@
 import rl from 'readline-sync';
 import { platform } from './src/platform.js';
-import { PIECE, EMIT } from './src/Enums.js';
+import { PIECE, EMIT } from './src/enums.js';
 import { normalize } from './src/utils.js';
 
 platform(reader, emitter);
@@ -13,22 +13,7 @@ function emitter(emit, ...args) {
 
     switch (emit) {
         case EMIT.GRID: {
-            const grid = args.shift();
-            const top = `┏━━${`┳━━`.repeat(grid.length - 1)}┓\n`;
-            const inner = grid.map(o =>
-                `┃${o.map(({ type, color }) => {
-                    if (type === PIECE.EMPTY)
-                        return '  ';
-                    else if (type === PIECE.TARGET)
-                        return '<>';
-                    else if (type === PIECE.CENTER)
-                        return '()';
-                    else
-                        return `${color[0]}${type[0]}`;
-                }).join('┃')}┃`)
-                .join(`\n┣━━${`╋━━`.repeat(grid.length - 1)}┫\n`);
-            const bottom = `\n┗━━${`┻━━`.repeat(grid.length - 1)}┛`;
-            console.log(`${top}${inner}${bottom}`);
+            gridPrinter(args.shift())
             break;
         }
         case EMIT.ERROR: {
@@ -77,4 +62,23 @@ function emitter(emit, ...args) {
             throw new Error(`Unknown emit: ${emit}`);
         }
     }
+
+    function gridPrinter(grid) {
+        const top = `┏━━${`┳━━`.repeat(grid.length - 1)}┓\n`;
+        const inner = grid.map(o =>
+            `┃${o.map(({ type, color }) => {
+                if (type === PIECE.EMPTY)
+                    return '  ';
+                else if (type === PIECE.TARGET)
+                    return '<>';
+                else if (type === PIECE.CENTER)
+                    return '()';
+                else
+                    return `${color[0]}${type[0]}`;
+            }).join('┃')}┃`)
+            .join(`\n┣━━${`╋━━`.repeat(grid.length - 1)}┫\n`);
+        const bottom = `\n┗━━${`┻━━`.repeat(grid.length - 1)}┛`;
+        console.log(`${top}${inner}${bottom}`);
+    }
+
 }

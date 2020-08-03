@@ -65,6 +65,10 @@ const EMIT = {
     PATTERN: 'Pattern'
 };
 
+const ARGS = {
+    FLIP: 'flip'
+};
+
 export {
     PIECE,
     COLOR,
@@ -73,5 +77,6 @@ export {
     TURN,
     SIDE_LENGTH,
     CARDS_PER_PLAYER,
-    EMIT
+    EMIT,
+    ARGS
 };

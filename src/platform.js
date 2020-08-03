@@ -1,5 +1,5 @@
 import { Game } from './Game.js';
-import { TURN, EMIT } from './Enums.js';
+import { TURN, EMIT } from './enums.js';
 
 export const platform = (reader, emitter) => {
     const game = new Game(emitter);
@@ -18,9 +18,9 @@ export const platform = (reader, emitter) => {
                     break;
                 }
                 case TURN.CARD: {
-                    if (rest.length !== 1)
+                    if ((rest.length !== 1 && rest.length !== 2))
                         emitter(EMIT.ERROR, `Invalid number of Arguments`);
-                    else game.pattern(rest.pop());
+                    else game.pattern(rest.shift(), rest.shift());
                     break;
                 }
                 case TURN.MOVE: {
@@ -63,7 +63,7 @@ export const platform = (reader, emitter) => {
                 default: {
                     emitter(EMIT.HELP, 'Help:');
                     emitter(EMIT.HELP, '- game');
-                    emitter(EMIT.HELP, '- card <card>');
+                    emitter(EMIT.HELP, '- card <card> flip?');
                     emitter(EMIT.HELP, '- pass <card>');
                     emitter(EMIT.HELP, '- move <start> <end> <card>');
                     emitter(EMIT.HELP, '- quit');
