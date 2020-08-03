@@ -1,0 +1,48 @@
+:root {
+    --cell-size: 1.4em;
+    --font-size: 1em;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Courier New", Courier, monospace;
+}
+
+.flex {
+    display: flex;
+}
+
+#grid {
+    padding-right: 0 /* 1em */;
+}
+
+.turn {
+    padding-bottom: 0 /* 1em */;
+}
+
+.row {
+    display: flex;
+}
+
+.cell {
+    height: var(--cell-size);
+    width: var(--cell-size);
+    border: 1px solid black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.piece {
+    font-size: var(--font-size);
+}
+
+.red {
+    color: red;
+}
+
+.blue {
+    color: blue;
+}
