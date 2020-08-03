@@ -1,6 +1,6 @@
-import { platform } from '../src/platform.js';
-import { PIECE, EMIT, COLOR } from '../src/enums.js';
-import { normalize } from '../src/utils.js';
+import { platform } from './platform.js';
+import { PIECE, EMIT, COLOR } from './enums.js';
+import { normalize } from './utils.js';
 
 platform(reader, emitter);
 
