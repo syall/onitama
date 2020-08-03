@@ -1,7 +1,7 @@
 import rl from 'readline-sync';
-import { platform } from './platform.js';
-import { PIECE, EMIT } from './enums.js';
-import { normalize } from './utils.js';
+import { platform } from './src/platform.js';
+import { PIECE, EMIT } from './src/enums.js';
+import { normalize } from './src/utils.js';
 
 platform(reader, emitter);
 
