@@ -13,7 +13,7 @@ function emitter(emit, ...args) {
 
     switch (emit) {
         case EMIT.GRID: {
-            gridPrinter(args.shift())
+            gridPrinter(args.shift());
             break;
         }
         case EMIT.ERROR: {
