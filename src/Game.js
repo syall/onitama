@@ -3,8 +3,8 @@ import { Player } from './Player.js';
 import { Piece } from './Piece.js';
 import { Board } from './Board.js';
 import {
-    PIECE, COLOR, STATUS, CARDS, SIDE_LENGTH, CARDS_PER_PLAYER, EMIT
-} from './Enums.js';
+    PIECE, COLOR, STATUS, CARDS, SIDE_LENGTH, CARDS_PER_PLAYER, EMIT, ARGS
+} from './enums.js';
 import { normalize } from './utils.js';
 
 export class Game {
@@ -54,13 +54,15 @@ export class Game {
         this.emitter(EMIT.PLAYER, this[COLOR.RISE]);
     }
 
-    pattern(name) {
+    pattern(name, flip) {
 
         const pattern = CARDS.get(name);
         if (!pattern) {
             this.emitter(EMIT.PATTERN, `Invalid Card: ${name}`);
         } else {
-            const dir = this.current === this[COLOR.RISE] ? 1 : -1;
+            const toFlip = flip === ARGS.FLIP ? -1 : 1;
+            const original = this.current.color === COLOR.RISE ? 1 : -1;
+            const dir = toFlip * original;
             this.emitter(EMIT.GRID, Board.createPattern(pattern, dir));
         }
 
@@ -121,9 +123,10 @@ export class Game {
         this.current.cards = [swap, ...this.current.cards.filter(c => c !== card)];
         this.swap = card;
 
+        const color = normalize(start.color);
         const piece = normalize(start.type);
         const move = `from ${sRow}${sCol} to ${eRow}${eCol}`;
-        return [null, `${piece} moved ${move} with ${card}`];
+        return [null, `${color} ${piece} moved ${move} with ${card}`];
     }
 
     pass(toPass) {

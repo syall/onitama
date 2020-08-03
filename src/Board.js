@@ -1,5 +1,5 @@
 import { Piece } from './Piece.js';
-import { PIECE, COLOR, SIDE_LENGTH } from './Enums.js';
+import { PIECE, COLOR, SIDE_LENGTH } from './enums.js';
 
 export class Board {
 

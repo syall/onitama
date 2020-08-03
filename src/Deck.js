@@ -1,4 +1,4 @@
-import { CARDS } from './Enums.js';
+import { CARDS } from './enums.js';
 
 export class Deck {
 
