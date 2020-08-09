@@ -1,6 +1,8 @@
 :root {
-    --cell-size: 1.4em;
-    --font-size: 1em;
+    --grid-cell-size: 2.2em;
+    --grid-font-size: 2.2em;
+    --card-cell-size: 1.2em;
+    --card-font-size: 1.2em;
 }
 
 * {
@@ -8,35 +10,99 @@
     padding: 0;
     box-sizing: border-box;
     font-family: "Courier New", Courier, monospace;
+    color: black;
 }
 
-.flex {
+html, body {
+    height: 100vh;
+    width: 100vw;
+}
+
+body {
     display: flex;
+    padding: 1em;
 }
 
-#grid {
-    padding-right: 0 /* 1em */;
+h1 {
+    text-align: center;
 }
 
-.turn {
-    padding-bottom: 0 /* 1em */;
+h1 a {
+    text-decoration: none;
+    height: 2em;
+}
+
+h2 {
+    text-align: center;
+}
+
+aside {
+    display: grid;
+    grid-template-rows: min-content min-content min-content 1fr min-content;
+    width: 20em;
+}
+
+.logs {
+    display: flex;
+    flex-direction: column;
+}
+
+ul {
+    list-style: none;
 }
 
 .row {
     display: flex;
 }
 
+.card .row {
+    justify-content: space-evenly;
+}
+
 .cell {
-    height: var(--cell-size);
-    width: var(--cell-size);
     border: 1px solid black;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.piece {
-    font-size: var(--font-size);
+.grid {
+    border: 1px solid black;
+    margin: 1em;
+}
+
+.grid .cell {
+    height: var(--grid-cell-size);
+    width: var(--grid-cell-size);
+}
+
+.grid .piece {
+    font-size: var(--grid-font-size);
+}
+
+.card {
+    border: 1px solid black;
+}
+
+.card .cell {
+    height: var(--card-cell-size);
+    width: var(--card-cell-size);
+}
+
+.player, .swap {
+    text-align: center;
+}
+
+.player .row, .swap .row {
+    justify-content: center;
+}
+
+.card {
+    margin: 1em;
+}
+
+.card .piece {
+    font-size: var(--card-font-size);
 }
 
 .red {
@@ -45,4 +111,35 @@
 
 .blue {
     color: blue;
+}
+
+.history {
+    overflow: scroll;
+    border: 1px solid black;
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.pusher {
+    margin-top: auto;
+}
+
+.success {
+    color: green;
+}
+
+.error {
+    color: red;
+}
+
+.turn {
+    text-decoration: underline;
+}
+
+.status {
+    font-weight: bold;
+}
+
+.input {
+    resize: none;
 }

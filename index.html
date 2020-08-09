@@ -9,31 +9,62 @@
 </head>
 
 <body>
-    <h1><span id="turn"></span> Player's Turn</h1>
-    <h2>Swap: <span id="swap"></span></h2>
-    <h2>Falling Player's Cards: <span class="player fall"></span></h2>
-    <div class="flex">
-        <div>
-            <h3>Turns</h3>
-            <div id="grid"></div>
+    <main>
+        <h1><a href="/">Onitama</a></h1>
+        <section class="fall player">
+            <h2>Falling Player:</h2>
+            <div class="row">
+                <div>
+                    <h3 class="first name"></h3>
+                    <div class="first card"></div>
+                </div>
+                <div>
+                    <h3 class="second name"></h3>
+                    <div class="second card"></div>
+                </div>
+            </div>
+        </section>
+        <section class="grid">
+            <div class="display"></div>
+        </section>
+        <section class="rise player">
+            <h2>Rising Player:</h2>
+            <div class="row">
+                <div>
+                    <h3 class="first name"></h3>
+                    <div class="first card"></div>
+                </div>
+                <div>
+                    <h3 class="second name"></h3>
+                    <div class="second card"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <aside>
+        <section>
+            <h2>Commands</h2>
+            <ul>
+                <li>- move &lt;start&gt; &lt;end&gt; &lt;card&gt;</li>
+                <li>- pass &lt;card&gt;</li>
+                <li>- quit</li>
+            </ul>
+        </section>
+        <section class="swap">
+            <h2>Swap:</h2>
+            <div class="row">
+                <div>
+                    <h3 class="name"></h3>
+                    <div class="card"></div>
+                </div>
+            </div>
+        </section>
+        <h2>Logs</h2>
+        <div class="history">
+            <div class="pusher"></div>
         </div>
-        <div>
-            <h3>Pattern</h3>
-            <div id="pattern"></div>
-        </div>
-    </div>
-    <h2>Rising Player's Cards: <span class="player rise"></span></h2>
-    <h2>Status: <span id="status">Game Started</span></h2>
-    <div>
-        <h2 id="help">Help</h2>
-        <ul>
-            <li>game</li>
-            <li>card &lt;card&gt; flip?</li>
-            <li>pass &lt;card&gt;</li>
-            <li>move &lt;start&gt; &lt;end&gt; &lt;card&gt;</li>
-            <li>quit</li>
-        </ul>
-    </div>
+        <textarea id="input" rows=1></textarea>
+    </aside>
     <script src="/docs/browser.js" type="module" defer></script>
 </body>
 

@@ -55,21 +55,26 @@ export class Game {
     }
 
     pattern(name, flip) {
-
-        const pattern = CARDS.get(name);
-        if (!pattern) {
+        name = normalize(name);
+        if (!CARDS.get(name)) {
             this.emitter(EMIT.PATTERN, `Invalid Card: ${name}`);
         } else {
-            const toFlip = flip === ARGS.FLIP ? -1 : 1;
-            const original = this.current.color === COLOR.RISE ? 1 : -1;
-            const dir = toFlip * original;
-            this.emitter(EMIT.GRID, Board.createPattern(pattern, dir));
+            this.emitter(EMIT.GRID, this.patternFactory(name, this.current.color, flip));
         }
+    }
 
+    patternFactory(name, color, flip) {
+        name = normalize(name);
+        const pattern = CARDS.get(name);
+        const toFlip = flip === ARGS.FLIP ? -1 : 1;
+        const original = color === COLOR.RISE ? 1 : -1;
+        const dir = toFlip * original;
+        return Board.createPattern(pattern, dir);
     }
 
     move(rawStart, rawEnd, card) {
 
+        card = normalize(card);
         if (!CARDS.has(card)) {
             return [`Invalid Card: ${card}`, null];
         } else if (!this.current.cards.includes(card)) {
@@ -131,6 +136,7 @@ export class Game {
 
     pass(toPass) {
 
+        toPass = normalize(toPass);
         if (!CARDS.has(toPass)) {
             return [`Invalid Card: ${toPass}`, null];
         } else if (!this.current.cards.includes(toPass)) {
@@ -155,7 +161,7 @@ export class Game {
                         }
                         const end = this.board[eX][eY];
                         if (end.color !== this.current.color) {
-                            return [`Moves Available: Invalid Pass`, null];
+                            return [`Invalid Pass: Moves Available`, null];
                         }
                     }
                 }

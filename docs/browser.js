@@ -1,13 +1,89 @@
-import { platform } from '../src/platform.js';
-import { PIECE, EMIT, COLOR } from '../src/enums.js';
+import { Game } from '../src/Game.js';
 import { normalize } from '../src/utils.js';
+import { PIECE, COLOR, TURN, EMIT } from '../src/enums.js';
 
-platform(reader, emitter);
+const game = new Game(emitter);
+let incomplete = true;
+const inputArea = document.getElementById('input');
 
-function reader() {
-    const string = prompt('Put input');
-    console.log(`Input: ${string}`);
-    return string;
+(function main() {
+    init();
+    inputArea.addEventListener('keypress', turn);
+})();
+
+function init() {
+    game.togglePlayer();
+    game.turn();
+}
+
+function turn(event) {
+
+    if (event.keyCode !== 13) {
+        return;
+    }
+
+    const [input, ...rest] = event.target.value.trim().split(/\W/g);
+
+    const history = document.querySelector('.history');
+    const message = document.createElement('div');
+    message.innerHTML = `${input} ${rest.join(' ')}`;
+    history.prepend(message);
+
+    switch (input) {
+        case TURN.MOVE: {
+            if (rest.length !== 3) {
+                emitter(EMIT.ERROR, `Invalid # of Arguments: ${rest.length}`);
+                break;
+            }
+            const [err, message] = game.move(...rest);
+            if (err)
+                emitter(EMIT.ERROR, err);
+            else {
+                incomplete = !incomplete;
+                emitter(EMIT.SUCCESS, message);
+            }
+            break;
+        }
+        case TURN.PASS: {
+            if (rest.length !== 1) {
+                emitter(EMIT.ERROR, `Invalid # of Arguments: ${rest.length}`);
+                break;
+            }
+            const [err, message] = game.pass(rest.pop());
+            if (err)
+                emitter(EMIT.ERROR, err);
+            else {
+                incomplete = !incomplete;
+                emitter(EMIT.SUCCESS, message);
+            }
+            break;
+        }
+        case TURN.QUIT: {
+            if (rest.length !== 0)
+                emitter(EMIT.ERROR, `Invalid # of Arguments: ${rest.length}`);
+            else {
+                game.surrender();
+                incomplete = !incomplete;
+            }
+            break;
+        }
+        default: {
+            emitter(EMIT.ERROR, `Unknown command`);
+            break;
+        }
+    }
+
+    if (!incomplete) {
+        if (game.isNotDone()) {
+            init();
+            incomplete = true;
+        } else {
+            game.final();
+            inputArea.removeEventListener('keypress', turn);
+        }
+    }
+
+    inputArea.value = '';
 }
 
 function emitter(emit, ...args) {
@@ -17,42 +93,56 @@ function emitter(emit, ...args) {
             gridPrinter(args.shift());
             break;
         }
-        case EMIT.ERROR: {
-            document.getElementById('status').innerHTML = `${args.shift()}`;
-            break;
-        }
         case EMIT.SUCCESS: {
-            document.getElementById('status').innerHTML = `${args.shift()}`;
+            const history = document.querySelector('.history');
+            const message = document.createElement('div');
+            message.classList.add('success');
+            message.innerHTML = args.shift();
+            history.prepend(message);
             break;
         }
-        case EMIT.BETWEEN: {
-            break;
-        }
-        case EMIT.DIV: {
-            break;
-        }
-        case EMIT.HELP: {
+        case EMIT.ERROR: {
+            const history = document.querySelector('.history');
+            const message = document.createElement('div');
+            message.classList.add('error');
+            message.innerHTML = args.shift();
+            history.prepend(message);
             break;
         }
         case EMIT.TURN: {
             const { color } = args.shift();
-            document.getElementById('turn').innerHTML = `${normalize(color)}`;
+            const history = document.querySelector('.history');
+            const message = document.createElement('div');
+            message.classList.add('turn');
+            message.innerHTML = `${normalize(color)} Player's Turn`;
+            history.prepend(message);
             break;
         }
         case EMIT.STATUS: {
-            document.getElementById('status').innerHTML = `\n<<< ${args.shift()} >>>`;
+            const status = args.shift();
+            const history = document.querySelector('.history');
+            const message = document.createElement('div');
+            message.classList.add('status');
+            message.innerHTML = status;
+            history.prepend(message);
             break;
         }
         case EMIT.SWAP: {
-            document.getElementById('swap').innerHTML = args.shift();
+            const name = args.shift();
+            const swap = `.swap `;
+            document.querySelector(`${swap}.name`).innerHTML = name;
+            gridPrinter(game.patternFactory(name, COLOR.RISE), swap);
             break;
         }
         case EMIT.PLAYER: {
-            const { color, cards } = args.shift();
-            if (color === COLOR.RISE)
-                document.querySelector('.player.rise').innerHTML = cards.join(', ');
-            else
-                document.querySelector('.player.fall').innerHTML = cards.join(', ');
+            const { color, cards: [firstCard, secondCard] } = args.shift();
+            const HEAD = color === COLOR.RISE ? '.rise' : '.fall';
+            const first = `${HEAD} .first`;
+            document.querySelector(`${first}.name`).innerHTML = firstCard;
+            gridPrinter(game.patternFactory(firstCard, color), first);
+            const second = `${HEAD} .second`;
+            document.querySelector(`${second}.name`).innerHTML = secondCard;
+            gridPrinter(game.patternFactory(secondCard, color), second);
             break;
         }
         case EMIT.PATTERN: {
@@ -64,7 +154,7 @@ function emitter(emit, ...args) {
         }
     }
 
-    function gridPrinter(grid) {
+    function gridPrinter(grid, target) {
         const turn = document.createElement('div');
         turn.classList.add('turn');
         for (const o of grid) {
@@ -88,8 +178,12 @@ function emitter(emit, ...args) {
             }
             turn.appendChild(row);
         }
-        const output = grid[2][2].type === PIECE.CENTER ? EMIT.PATTERN : EMIT.GRID;
-        document.getElementById(output.toLowerCase()).innerHTML = turn.innerHTML;
+        if (!target) {
+            document.querySelector('.grid .display').innerHTML = turn.innerHTML;
+        } else {
+            const pattern = `${target}.card`;
+            document.querySelector(pattern).innerHTML = turn.innerHTML;
+        }
     }
 
 }
